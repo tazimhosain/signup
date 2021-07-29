@@ -1,3 +1,7 @@
+<?php
+  session_start();
+?>
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -16,7 +20,7 @@
     <link rel="shortcut icon" type="image/x-icon" href="images/">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="css/responsive.css">
-    <title>create account</title>
+    <title>Log In</title>
 </head>
 
 <body>
@@ -25,40 +29,33 @@
     $con = new mysqli('localhost', 'root', '', 'signup');
 
     if(isset($_POST['submit'])){
-      $uname = mysqli_real_escape_string($con, $_POST['username']);
       $email = mysqli_real_escape_string($con, $_POST['mail']);
-      $phone = mysqli_real_escape_string($con, $_POST['phone']);
       $passw = mysqli_real_escape_string($con, $_POST['pass']);
-      $cpassw = mysqli_real_escape_string($con, $_POST['cpass']);
 
+      $email_search = mysqli_query($con, "SELECT * FROM usersignup WHERE email = '$email' ");
 
-      $emailquery = mysqli_query($con, "SELECT * FROM usersignup WHERE email='$email' " ); 
+      $email_count = mysqli_num_rows($email_search);
 
-      $emailcount = mysqli_num_rows($emailquery);
+      if($email_count){
 
-      if($emailcount>0){
-        ?>
-        <script>alert("This Email Already Used")</script>
-        <?php
-      }else{
-        if($passw === $cpassw){
-            $iquery = mysqli_query($con, "INSERT INTO usersignup(name, email, phone, password, cpassword) VALUES ('$uname', '$email', '$phone', '$passw', '$cpassw')");
+        $email_pass = mysqli_fetch_assoc($email_search);
 
-            if($iquery){
-              ?>
-            <script>alert("Insert SuccessFully")</script>
-            <?php
-            }else{
-              ?>
-            <script>alert("Insert Error")</script>
-            <?php
-            }
+        $db_pass = $email_pass['password'];
+
+        $_SESSION['user'] = $email_pass['name'];
+
+        // $pass_verify = password_verify($passw, $db_pass);
+
+        if($passw == $db_pass){
+          echo "Log In Successfull";
+          header("Location: home.php");
 
         }else{
-          ?>
-        <script>alert("Password Not Matched")</script>
-        <?php
+          echo "Password Incorrect";
         }
+
+      }else{
+        echo "Invalid Email";
       }
 
     }
@@ -66,14 +63,8 @@
   ?>
 
     <div class="form_box">
-        <h2 class="my-3 text-center">Create Account</h2>
-    <form action="" method="POST">
-            <div class="input-group my-2">
-              <div class="input-group-prepend">
-                <div class="input-group-text"><i class="fa fa-address-book"></i></div>
-              </div>
-              <input type="text" class="form-control" name="username" placeholder="Username">
-            </div>
+        <h2 class="my-3 text-center">Log In</h2>
+    <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="POST">
             <div class="input-group my-2">
               <div class="input-group-prepend">
                 <div class="input-group-text"><i class="fa fa-envelope"></i></div>
@@ -82,26 +73,14 @@
             </div>
             <div class="input-group my-2">
               <div class="input-group-prepend">
-                <div class="input-group-text"><i class="fa fa-phone"></i></div>
-              </div>
-              <input type="tel" class="form-control" name="phone" placeholder="Phone Number">
-            </div>
-            <div class="input-group my-2">
-              <div class="input-group-prepend">
                 <div class="input-group-text"><i class="fa fa-lock"></i></div>
               </div>
-              <input type="password" class="form-control" name="pass" placeholder="Create Password">
-            </div>
-            <div class="input-group my-2">
-              <div class="input-group-prepend">
-                <div class="input-group-text"><i class="fa fa-lock"></i></div>
-              </div>
-              <input type="password" class="form-control" name="cpass" placeholder="Repeat Password">
+              <input type="password" class="form-control" name="pass" placeholder="Password">
             </div>
 
-            <input type="submit" value="Create Account" name="submit" class="btn btn-primary btn-block">
+            <input type="submit" value="Log In" name="submit" class="btn btn-primary btn-block">
       </form>
-      <p class="lead my-3 text-center">Have an account? <a href="">Log In</a></p>
+      <p class="lead my-3 text-center">Don't Have an account? <a href="">Signup Here</a></p>
     </div>
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
